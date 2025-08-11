@@ -1,0 +1,19 @@
+server:
+  port: 8084
+
+
+spring:
+  application:
+    name: travelapp
+  datasource:
+    url: jdbc:mysql://localhost:3306/travelapp
+    username: root
+    password: root
+  jpa:
+    hibernate:
+      ddl-auto: update
+      show-sql: true
+  thymeleaf:
+    cache: false
+    prefix: classpath:/templates/
+    suffix: .html
