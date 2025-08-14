@@ -1,42 +1,32 @@
 package com.example.travelapp.entity;
 
 import jakarta.persistence.*;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
-
-import java.util.Collection;
-import java.util.List;
 
 @Entity
-public class Customer implements UserDetails {
+public class Customer {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     private String name;
     private String phone;
-
-    @Column(unique = true)
-    private String email;
-
     private Integer loyaltyPoints;
-    private String password;
 
-    @OneToMany(mappedBy = "customer")
-    private List<Booking> bookings;
+    @OneToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
     public Customer() {}
 
-    public Customer(String name, String phone, String email, Integer loyaltyPoints, String password) {
+    public Customer(String name, String phone, Integer loyaltyPoints, User user) {
         this.name = name;
         this.phone = phone;
-        this.email = email;
         this.loyaltyPoints = loyaltyPoints;
-        this.password = password;
+        this.user = user;
     }
 
-    // Getters / Setters classiques
+    // Getters / Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
@@ -46,39 +36,9 @@ public class Customer implements UserDetails {
     public String getPhone() { return phone; }
     public void setPhone(String phone) { this.phone = phone; }
 
-    public String getEmail() { return email; }
-    public void setEmail(String email) { this.email = email; }
-
     public Integer getLoyaltyPoints() { return loyaltyPoints; }
     public void setLoyaltyPoints(Integer loyaltyPoints) { this.loyaltyPoints = loyaltyPoints; }
 
-    public void setPassword(String password) { this.password = password; }
-
-    // Méthodes UserDetails
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority("ROLE_USER"));
-    }
-
-    @Override
-    public String getPassword() {
-        return password;
-    }
-
-    @Override
-    public String getUsername() {
-        return email;
-    }
-
-    @Override
-    public boolean isAccountNonExpired() { return true; }
-
-    @Override
-    public boolean isAccountNonLocked() { return true; }
-
-    @Override
-    public boolean isCredentialsNonExpired() { return true; }
-
-    @Override
-    public boolean isEnabled() { return true; }
+    public User getUser() { return user; }
+    public void setUser(User user) { this.user = user; }
 }

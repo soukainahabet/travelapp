@@ -8,14 +8,32 @@ import java.util.List;
 
 @Service
 public class CustomerService {
-    private  final CustomerRepository repository;
-    public CustomerService(CustomerRepository repository){
-        this.repository=repository;
+
+    private final CustomerRepository customerRepository;
+
+    public CustomerService(CustomerRepository customerRepository) {
+        this.customerRepository = customerRepository;
     }
-    public List<Customer> findAll(){return  repository.findAll();}
-    public Customer findById(Long id){return repository.findById(id).orElse(null);}
-    public Customer save(Customer c) { return repository.save(c); }
-    public void delete(Long id) { repository.deleteById(id); }
 
+    public List<Customer> findAll() {
+        return customerRepository.findAll();
+    }
 
+    public Customer findById(Long id) {
+        return customerRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Customer not found with id " + id));
+    }
+
+    public Customer save(Customer c) {
+        return customerRepository.save(c);
+    }
+
+    public void delete(Long id) {
+        customerRepository.deleteById(id);
+    }
+
+    // ← Ajouter cette méthode pour BookingController
+    public Customer getCustomerById(Long id) {
+        return findById(id);
+    }
 }
