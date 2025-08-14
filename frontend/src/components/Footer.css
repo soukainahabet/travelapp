@@ -1,0 +1,10 @@
+.footer {
+  background-color: #023e8a;
+  color: white;
+  text-align: center;
+  padding: 1rem 0;
+  font-family: 'Segoe UI', sans-serif;
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+}
