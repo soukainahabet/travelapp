@@ -4,11 +4,15 @@ import com.example.travelapp.entity.Booking;
 import com.example.travelapp.entity.Customer;
 import com.example.travelapp.entity.User;
 import com.example.travelapp.enums.Role;
+import com.example.travelapp.repository.CustomerRepository;
 import com.example.travelapp.services.BookingService;
 import com.example.travelapp.services.CustomerService;
 import com.example.travelapp.services.UserService;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.List;
 
 @RestController
@@ -17,11 +21,14 @@ public class BookingController {
 
     private final BookingService bookingService;
     private final CustomerService customerService;
+    private final CustomerRepository customerRepository;
+
     private final UserService userService;
 
-    public BookingController(BookingService bookingService, CustomerService customerService, UserService userService) {
+    public BookingController(BookingService bookingService, CustomerService customerService, CustomerRepository customerRepository, UserService userService) {
         this.bookingService = bookingService;
         this.customerService = customerService;
+        this.customerRepository = customerRepository;
         this.userService = userService;
     }
 
@@ -38,12 +45,19 @@ public class BookingController {
     }
 
     // -------------------- CREATE BOOKING --------------------
+
+
     @PostMapping
-    public Booking createBooking(@RequestBody Booking booking, @RequestParam Long userId) {
-        Customer customer = customerService.getCustomerById(userId);
-        booking.setCustomer(customer);
-        return bookingService.saveBooking(booking);
+    public ResponseEntity<?> createBooking(@RequestBody Booking booking, Principal principal) {
+        if (principal == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Utilisateur non connecté !");
+        }
+
+        String email = principal.getName(); // récupéré depuis JWT
+        Booking savedBooking = bookingService.saveBookingForUser(booking, email);
+        return ResponseEntity.ok(savedBooking);
     }
+
 
     // -------------------- DELETE BOOKING --------------------
     @DeleteMapping("/{id}")

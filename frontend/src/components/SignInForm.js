@@ -1,92 +1,75 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import "../styles/SignUpForm.css"; // même style
+import React, { useState } from 'react';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
-function SignInForm() {
-  const [form, setForm] = useState({ email: "", password: "" });
-  const [errors, setErrors] = useState({});
-  const [message, setMessage] = useState("");
+export default function SignInForm() {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
   const navigate = useNavigate();
-
-  const validate = () => {
-    let newErrors = {};
-
-    if (!form.email) newErrors.email = "L'email est requis";
-    else if (!/\S+@\S+\.\S+/.test(form.email)) newErrors.email = "Email invalide";
-
-    if (!form.password) newErrors.password = "Mot de passe requis";
-    else if (form.password.length < 6)
-      newErrors.password = "6 caractères minimum";
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!validate()) return;
+    setError('');
 
     try {
-      const res = await fetch("http://localhost:8084/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+      // Appel au backend pour authentification
+      const response = await axios.post('http://localhost:8084/api/auth/login', {
+        email,
+        password
       });
 
-      if (res.ok) {
-        const data = await res.json();
-        // stocker le nom et token
-        localStorage.setItem("username", data.name);
-        localStorage.setItem("token", data.token || "");
-
-        setMessage(`Bienvenue ${data.name} (${data.email})`);
-        navigate("/"); // redirection vers home
-      } else {
-        setMessage("Identifiants invalides");
+      // Vérifie que token et user existent
+      const data = response.data;
+      if (!data || !data.token || !data.user) {
+        setError('Réponse du serveur invalide.');
+        return;
       }
-    } catch (error) {
-      console.error(error);
-      setMessage("Erreur serveur");
+
+      // Stocker token et infos utilisateur dans localStorage
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('user', JSON.stringify(data.user));
+      localStorage.setItem('isLoggedIn', 'true');
+
+      // Redirection après connexion
+      navigate('/');
+    } catch (err) {
+      console.error(err);
+      const message = err.response?.data?.message || 'Email ou mot de passe incorrect.';
+      setError(message);
     }
   };
 
   return (
-    <div className="signup-card">
-      <h2>Connexion</h2>
+    <div style={{ maxWidth: '400px', margin: 'auto', padding: '2rem' }}>
+      <h2>Se connecter</h2>
+      {error && <p style={{ color: 'red' }}>{error}</p>}
+
       <form onSubmit={handleSubmit}>
-        <div className="form-group">
-          <label>Email</label>
+        <div style={{ marginBottom: '1rem' }}>
+          <label>Email :</label>
           <input
             type="email"
-            name="email"
-            value={form.email}
-            onChange={handleChange}
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
             required
+            style={{ width: '100%' }}
           />
-          {errors.email && <small>{errors.email}</small>}
         </div>
 
-        <div className="form-group">
-          <label>Mot de passe</label>
+        <div style={{ marginBottom: '1rem' }}>
+          <label>Mot de passe :</label>
           <input
             type="password"
-            name="password"
-            value={form.password}
-            onChange={handleChange}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
             required
+            style={{ width: '100%' }}
           />
-          {errors.password && <small>{errors.password}</small>}
         </div>
 
-        <button type="submit" className="btn">Se connecter</button>
+        <button type="submit" style={{ width: '100%' }}>Connexion</button>
       </form>
-      {message && <p>{message}</p>}
     </div>
   );
 }
-
-export default SignInForm;

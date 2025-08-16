@@ -3,6 +3,7 @@ package com.example.travelapp.entity;
 import com.example.travelapp.enums.BookingStatus;
 import jakarta.persistence.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -33,6 +34,9 @@ public class Booking {
 
     @OneToMany(mappedBy = "booking")
     private List<Review> reviews;
+    @Column(name = "booking_date", nullable = false)
+    private LocalDateTime bookingDate;
+
 
     // Constructeur par défaut
     public Booking() {}
@@ -43,6 +47,8 @@ public class Booking {
         this.seats = seats;
         this.specialRequests = specialRequests;
         this.status = status;
+        this.bookingDate = LocalDateTime.now(); // Par défaut, date actuelle
+
     }
 
     // Getters et Setters
@@ -125,4 +131,13 @@ public class Booking {
     public void setReviews(List<Review> reviews) {
         this.reviews = reviews;
     }
+
+    public void setBookingDate(LocalDateTime bookingDate) {
+        this.bookingDate = bookingDate;
+    }
+    public void setBookingDateNow() {
+        this.bookingDate = LocalDateTime.now();
+    }
+
+
 }

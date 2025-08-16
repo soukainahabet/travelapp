@@ -7,7 +7,9 @@ import { AuthProvider } from "./components/AuthContext"; // chemin correct
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
-  <AuthProvider>
-      <App />
-  </AuthProvider>
+  <BrowserRouter>
+      <AuthProvider>
+        <App />
+      </AuthProvider>
+    </BrowserRouter>
 );
