@@ -1,0 +1,46 @@
+/* Home.css */
+.home-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Styles pour assurer un bon espacement entre les sections */
+.home-page > section {
+  padding: 4rem 0;
+}
+
+/* Ajustements responsifs */
+@media (max-width: 768px) {
+  .home-page > section {
+    padding: 3rem 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .home-page > section {
+    padding: 2rem 0;
+  }
+}
+
+/* Styles spécifiques pour l'ordre des sections */
+.home-page .hero {
+  padding: 0;
+  margin: 0;
+}
+
+.home-page .search-section {
+  background-color: #f8f9fa;
+}
+
+.home-page .destinations-section {
+  background-color: white;
+}
+
+.home-page .features-section {
+  background-color: #f8f9fa;
+}
+
+.home-page .footer {
+  margin-top: auto; /* Pour que le footer reste en bas */
+}

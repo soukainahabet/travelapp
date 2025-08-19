@@ -1,24 +1,23 @@
-import React from "react";
-import HeroSection from "../components/HeroSection";
-import Footer from "../components/Footer";
+import React from 'react';
+import Navigation from '../components/Navigation';
+import HeroSection from '../components/HeroSection';
+import SearchSection from '../components/SearchSection';
+import DestinationGrid from '../components/DestinationGrid';
+import FeaturesSection from '../components/FeaturesSection';
+import Footer from '../components/Footer';
+import "../styles/Home.css"
 
-export default function Home() {
-  const username = localStorage.getItem("username");
-
+const Home = () => {
   return (
-    <>
+    <div className="home-page">
+      <Navigation />
       <HeroSection />
-      <main style={{ padding: "2rem", minHeight: "20vh" }}>
-        {username ? (
-          <h2>Welcome {username} 👋</h2>
-        ) : (
-          <>
-            <h2>Welcome to TravelApp</h2>
-            <p>Plan and book your trips easily and conveniently.</p>
-          </>
-        )}
-      </main>
+      <SearchSection />
+      <DestinationGrid />
+      <FeaturesSection />
       <Footer />
-    </>
+    </div>
   );
-}
+};
+
+export default Home;
