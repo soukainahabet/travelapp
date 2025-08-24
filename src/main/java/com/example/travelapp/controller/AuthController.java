@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = "*", maxAge = 3600)
 public class AuthController {
 
     private final UserService userService;
@@ -20,23 +20,40 @@ public class AuthController {
 
     @PostMapping("/signup")
     public ResponseEntity<String> register(@RequestBody SignupRequest request) {
-        String result = userService.register(
-                request.getEmail(),
-                request.getPassword(),
-                request.getRole(),
-                request.getName(),
-                request.getPhone()
-        );
-        return ResponseEntity.ok(result);
+        try {
+            String result = userService.register(
+                    request.getEmail(),
+                    request.getPassword(),
+                    request.getRole(),
+                    request.getName(),
+                    request.getPhone()
+            );
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Registration failed: " + e.getMessage());
+        }
     }
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest request) {
-        UserResponse user = userService.login(request.getEmail(), request.getPassword());
-        if (user == null) {
-            return ResponseEntity.status(401).body("Email ou mot de passe incorrect");
+        try {
+            UserResponse user = userService.login(request.getEmail(), request.getPassword());
+            if (user == null) {
+                return ResponseEntity.status(401).body("Email ou mot de passe incorrect");
+            }
+            return ResponseEntity.ok(user);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Login failed: " + e.getMessage());
         }
-        return ResponseEntity.ok(user);
     }
 
+    @PostMapping("/logout")
+    public ResponseEntity<String> logout() {
+        return ResponseEntity.ok("Logged out successfully");
+    }
+
+    @GetMapping("/test")
+    public ResponseEntity<String> test() {
+        return ResponseEntity.ok("Backend is running!");
+    }
 }

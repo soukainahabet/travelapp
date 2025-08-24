@@ -1,5 +1,5 @@
 server:
-  port: 8084
+  port: 8080
 
 
 spring:
@@ -8,7 +8,7 @@ spring:
   datasource:
     url: jdbc:mysql://localhost:3306/travelapp
     username: root
-    password: root
+    password: Douglas@123
   jpa:
     hibernate:
       ddl-auto: update

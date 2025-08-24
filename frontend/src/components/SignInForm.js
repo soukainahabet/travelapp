@@ -1,74 +1,68 @@
 import React, { useState } from 'react';
-import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { authService } from '../services/authService';
+import { useAuth } from '../context/AuthContext';
 
 export default function SignInForm() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [formData, setFormData] = useState({
+    email: '',
+    password: ''
+  });
   const [error, setError] = useState('');
-  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+  const { login } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
     setError('');
 
     try {
-      // Appel au backend pour authentification
-      const response = await axios.post('http://localhost:8084/api/auth/login', {
-        email,
-        password
-      });
-
-      // Vérifie que token et user existent
-      const data = response.data;
-      if (!data || !data.token || !data.user) {
-        setError('Réponse du serveur invalide.');
-        return;
-      }
-
-      // Stocker token et infos utilisateur dans localStorage
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('user', JSON.stringify(data.user));
-      localStorage.setItem('isLoggedIn', 'true');
-
-      // Redirection après connexion
-      navigate('/');
+      const user = await authService.login(formData.email, formData.password);
+      login(user);
     } catch (err) {
-      console.error(err);
-      const message = err.response?.data?.message || 'Email ou mot de passe incorrect.';
-      setError(message);
+      setError('Email ou mot de passe invalide');
+    } finally {
+      setLoading(false);
     }
   };
 
-  return (
-    <div style={{ maxWidth: '400px', margin: 'auto', padding: '2rem' }}>
-      <h2>Se connecter</h2>
-      {error && <p style={{ color: 'red' }}>{error}</p>}
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    });
+  };
 
+  return (
+    <div style={{ maxWidth: '400px', margin: '0 auto', padding: '2rem' }}>
+      <h2>Se connecter</h2>
       <form onSubmit={handleSubmit}>
         <div style={{ marginBottom: '1rem' }}>
           <label>Email :</label>
           <input
             type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            name="email"
+            value={formData.email}
+            onChange={handleChange}
             required
-            style={{ width: '100%' }}
+            style={{ width: '100%', padding: '0.5rem' }}
           />
         </div>
-
         <div style={{ marginBottom: '1rem' }}>
           <label>Mot de passe :</label>
           <input
             type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            name="password"
+            value={formData.password}
+            onChange={handleChange}
             required
-            style={{ width: '100%' }}
+            style={{ width: '100%', padding: '0.5rem' }}
           />
         </div>
-
-        <button type="submit" style={{ width: '100%' }}>Connexion</button>
+        {error && <div style={{ color: 'red', marginBottom: '1rem' }}>{error}</div>}
+        <button type="submit" disabled={loading} style={{ width: '100%', padding: '0.5rem' }}>
+          {loading ? 'Connexion...' : 'Se connecter'}
+        </button>
       </form>
     </div>
   );
