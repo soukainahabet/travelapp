@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { authService } from "../services/authService";
 import "../styles/SignUpForm.css"; // ton CSS avec .signup-card etc.
 
@@ -11,6 +12,7 @@ export default function SignUpForm() {
   });
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -24,8 +26,13 @@ export default function SignUpForm() {
         formData.name,
         formData.phone
       );
-      setMessage("Inscription réussie !");
+      setMessage("Inscription réussie ! Redirection vers la connexion...");
       setFormData({ email: "", password: "", name: "", phone: "" });
+
+      // Redirect to login page after 2 seconds
+      setTimeout(() => {
+        navigate("/signin");
+      }, 2000);
     } catch (err) {
       setMessage("Échec de l'inscription. Veuillez réessayer.");
     } finally {

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { authService } from '../services/authService';
 import { useAuth } from '../context/AuthContext';
 
@@ -10,6 +11,7 @@ export default function SignInForm() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -19,6 +21,8 @@ export default function SignInForm() {
     try {
       const user = await authService.login(formData.email, formData.password);
       login(user);
+      // Redirect to homepage on successful login
+      navigate('/');
     } catch (err) {
       setError('Email ou mot de passe invalide');
     } finally {

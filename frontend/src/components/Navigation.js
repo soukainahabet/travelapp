@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import '../styles/Navigation.css';
 
 const Navigation = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [menuActive, setMenuActive] = useState(false);
   const location = useLocation();
+  const { isAuthenticated, user, logout } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -27,6 +29,10 @@ const Navigation = () => {
 
   const closeMenu = () => {
     setMenuActive(false);
+  };
+
+  const handleLogout = () => {
+    logout();
   };
 
   // Fonction pour vérifier si un lien est actif
@@ -66,24 +72,41 @@ const Navigation = () => {
               Reservation
             </Link>
           </li>
-          <li className="nav-item">
-            <Link
-              to="/signin"
-              className={`nav-link ${isActiveLink('/signin') ? 'active' : ''}`}
-              onClick={closeMenu}
-            >
-              Sign In
-            </Link>
-          </li>
-          <li className="nav-item">
-            <Link
-              to="/signup"
-              className={`nav-link signup-btn ${isActiveLink('/signup') ? 'active' : ''}`}
-              onClick={closeMenu}
-            >
-              Sign Up
-            </Link>
-          </li>
+          {isAuthenticated ? (
+            <>
+              <li className="nav-item">
+                <span className="nav-link user-name">
+                  {user.name}
+                </span>
+              </li>
+              <li className="nav-item">
+                <button onClick={handleLogout} className="nav-link logout-btn">
+                  Déconnexion
+                </button>
+              </li>
+            </>
+          ) : (
+            <>
+              <li className="nav-item">
+                <Link
+                  to="/signin"
+                  className={`nav-link ${isActiveLink('/signin') ? 'active' : ''}`}
+                  onClick={closeMenu}
+                >
+                  Sign In
+                </Link>
+              </li>
+              <li className="nav-item">
+                <Link
+                  to="/signup"
+                  className={`nav-link signup-btn ${isActiveLink('/signup') ? 'active' : ''}`}
+                  onClick={closeMenu}
+                >
+                  Sign Up
+                </Link>
+              </li>
+            </>
+          )}
         </ul>
 
         {/* Hamburger menu */}

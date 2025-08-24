@@ -1,22 +1,20 @@
-import React from "react";
+import React, { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import SignInForm from "../components/SignInForm";
 import { useAuth } from "../context/AuthContext";
 
 export default function SignIn() {
-  const { isAuthenticated, user, logout } = useAuth();
+  const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/');
+    }
+  }, [isAuthenticated, navigate]);
 
   if (isAuthenticated) {
-    return (
-      <main style={{ minHeight: "80vh", padding: "2rem" }}>
-        <div style={{ maxWidth: '400px', margin: '0 auto', textAlign: 'center' }}>
-          <h2>Welcome, {user.name}!</h2>
-          <p>Email: {user.email}</p>
-          <button onClick={logout} style={{ padding: '0.5rem 1rem' }}>
-            Logout
-          </button>
-        </div>
-      </main>
-    );
+    return null; // Render nothing while redirecting
   }
 
   return (
