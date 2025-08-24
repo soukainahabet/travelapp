@@ -6,6 +6,7 @@ import Reservation from "./pages/Reservation";
 import SignIn from "./pages/SignIn";
 import SignUp from "./pages/SignUp";
 import Navigation from "./components/Navigation";
+import MyBookings from "./pages/MyBookings";
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
           <Route path="/reservation" element={<Reservation />} />
           <Route path="/signin" element={<SignIn />} />
           <Route path="/signup" element={<SignUp />} />
+          <Route path="/my-bookings" element={<MyBookings />} />
         </Routes>
       </Router>
     </AuthProvider>

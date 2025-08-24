@@ -34,7 +34,7 @@ public class Booking {
 
     @OneToMany(mappedBy = "booking")
     private List<Review> reviews;
-    @Column(name = "booking_date", nullable = false)
+    @Column(name = "booking_date")
     private LocalDateTime bookingDate;
 
 
@@ -49,6 +49,11 @@ public class Booking {
         this.status = status;
         this.bookingDate = LocalDateTime.now(); // Par défaut, date actuelle
 
+    }
+
+    @PrePersist
+    protected void onCreate() {
+        bookingDate = LocalDateTime.now();
     }
 
     // Getters et Setters
@@ -130,6 +135,10 @@ public class Booking {
 
     public void setReviews(List<Review> reviews) {
         this.reviews = reviews;
+    }
+
+    public LocalDateTime getBookingDate() {
+        return bookingDate;
     }
 
     public void setBookingDate(LocalDateTime bookingDate) {

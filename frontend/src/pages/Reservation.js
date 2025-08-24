@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { bookingService } from '../services/BookingService';
 import '../styles/Reservation.css';
 
 // Icônes SVG intégrées
@@ -109,6 +111,12 @@ const Reservation = () => {
   const [selectedFlight, setSelectedFlight] = useState(null);
   const [selectedHotel, setSelectedHotel] = useState(null);
   const [showBookingSummary, setShowBookingSummary] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [bookingCounter, setBookingCounter] = useState(() => {
+    const saved = localStorage.getItem('bookingCounter');
+    return saved ? parseInt(saved) : 0;
+  });
+  const navigate = useNavigate();
 
   const flights = [
     {
@@ -130,6 +138,36 @@ const Reservation = () => {
       price: 245,
       stops: 'Direct',
       aircraft: 'Boeing 737'
+    },
+    {
+      id: 3,
+      airline: 'Ryanair',
+      departure: '11:10',
+      arrival: '15:50',
+      duration: '4h 30m',
+      price: 145,
+      stops: 'Direct',
+      aircraft: 'Airbus 737'
+    },
+    {
+      id: 4,
+      airline: 'Royel Air Maroc',
+      departure: '19:20',
+      arrival: '22:00',
+      duration: '2h 50m',
+      price: 25,
+      stops: 'Direct',
+      aircraft: 'Boeing 737'
+    },
+    {
+      id: 5,
+      airline: 'Lufthansa',
+      departure: '8:30',
+      arrival: '10:50',
+      duration: '5h 00m',
+      price: 49,
+      stops: 'Direct',
+      aircraft: 'Airbus 737'
     }
   ];
 
@@ -154,9 +192,38 @@ const Reservation = () => {
     }
   ];
 
-  const handleBooking = () => {
+  const handleBooking = async () => {
     if (selectedFlight && selectedHotel) {
-      setShowBookingSummary(true);
+      setIsLoading(true);
+
+      // Increment counter and save to localStorage
+      const newCounter = bookingCounter + 1;
+      setBookingCounter(newCounter);
+      localStorage.setItem('bookingCounter', newCounter.toString());
+
+      const bookingData = {
+        seats: searchData.travelers,
+        status: 'CONFIRMED',
+        specialRequests: 'Aucune',
+        travel: { id: selectedFlight.id },
+        hotel: { id: selectedHotel.id },
+        selectedFlight: selectedFlight, // Pass the full flight object
+        selectedHotel: selectedHotel,     // Pass the full hotel object
+        bookingNumber: newCounter // Add booking number for tracking
+      };
+
+      try {
+        await bookingService.createBooking(bookingData);
+        // Redirect to my bookings page on success
+        navigate('/my-bookings');
+      } catch (error) {
+        console.error('Booking failed:', error);
+        alert(`La réservation a échoué: ${error.message}`);
+      } finally {
+        setIsLoading(false);
+      }
+    } else {
+      alert('Veuillez sélectionner un vol et un hôtel avant de réserver.');
     }
   };
 
@@ -476,11 +543,16 @@ const Reservation = () => {
 
                   <button
                     onClick={handleBooking}
-                    disabled={!selectedFlight || !selectedHotel}
+                    disabled={!selectedFlight || !selectedHotel || isLoading}
                     className={`book-btn ${selectedFlight && selectedHotel ? 'active' : 'disabled'}`}
                   >
                     <CreditCardIcon />
-                    <span>Réserver maintenant</span>
+                    <span>
+                      {isLoading ? 'Réservation...' : 'Réserver maintenant'}
+                      {bookingCounter > 0 && !isLoading && (
+                        <span className="booking-counter"> ({bookingCounter})</span>
+                      )}
+                    </span>
                     <ArrowRightIcon />
                   </button>
                 </>

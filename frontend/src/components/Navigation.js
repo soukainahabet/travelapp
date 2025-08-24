@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import '../styles/Navigation.css';
 
 const Navigation = () => {
   const [isScrolled, setIsScrolled] = useState(false);
-  const [menuActive, setMenuActive] = useState(false);
+  const [accountDropdownActive, setAccountDropdownActive] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
   const { isAuthenticated, user, logout } = useAuth();
 
   useEffect(() => {
@@ -20,104 +21,93 @@ const Navigation = () => {
 
   useEffect(() => {
     // Fermer le menu quand la route change
-    setMenuActive(false);
+    setAccountDropdownActive(false);
   }, [location]);
 
-  const toggleMenu = () => {
-    setMenuActive(!menuActive);
-  };
-
-  const closeMenu = () => {
-    setMenuActive(false);
+  const toggleAccountDropdown = () => {
+    setAccountDropdownActive(!accountDropdownActive);
   };
 
   const handleLogout = () => {
     logout();
-  };
-
-  // Fonction pour vérifier si un lien est actif
-  const isActiveLink = (path) => {
-    return location.pathname === path;
+    setAccountDropdownActive(false);
+    navigate('/'); // Redirect to home page after logout
   };
 
   return (
     <nav className={`navbar ${isScrolled ? 'scrolled' : ''}`}>
       <div className="nav-container">
         <div className="nav-logo">
-          <Link to="/" onClick={closeMenu}>
-            <span>✈️ TravelApp</span>
+          <Link to="/" onClick={() => setAccountDropdownActive(false)}>
+            ✈️ TravelApp
           </Link>
         </div>
 
-        {/* Menu principal */}
-        <ul className={`nav-menu ${menuActive ? 'active' : ''}`}>
+        <ul className="nav-menu">
           <li className="nav-item">
-            <Link
-              to="/"
-              className={`nav-link ${isActiveLink('/') ? 'active' : ''}`}
-              onClick={closeMenu}
-            >
+            <Link to="/" className="nav-link">
               Home
             </Link>
           </li>
-           <li className="nav-item">
-                      <a href="#destinations" className="nav-link">Destination</a>
-          </li>
           <li className="nav-item">
-            <Link
-              to="/reservation"
-              className={`nav-link ${isActiveLink('/reservation') ? 'active' : ''}`}
-              onClick={closeMenu}
-            >
+            <Link to="/reservation" className="nav-link">
               Reservation
             </Link>
           </li>
-          {isAuthenticated ? (
-            <>
-              <li className="nav-item">
-                <span className="nav-link user-name">
-                  {user.name}
-                </span>
-              </li>
-              <li className="nav-item">
-                <button onClick={handleLogout} className="nav-link logout-btn">
-                  Déconnexion
-                </button>
-              </li>
-            </>
-          ) : (
-            <>
-              <li className="nav-item">
-                <Link
-                  to="/signin"
-                  className={`nav-link ${isActiveLink('/signin') ? 'active' : ''}`}
-                  onClick={closeMenu}
-                >
-                  Sign In
-                </Link>
-              </li>
-              <li className="nav-item">
-                <Link
-                  to="/signup"
-                  className={`nav-link signup-btn ${isActiveLink('/signup') ? 'active' : ''}`}
-                  onClick={closeMenu}
-                >
-                  Sign Up
-                </Link>
-              </li>
-            </>
-          )}
-        </ul>
 
-        {/* Hamburger menu */}
-        <div
-          className={`hamburger ${menuActive ? 'active' : ''}`}
-          onClick={toggleMenu}
-        >
-          <span></span>
-          <span></span>
-          <span></span>
-        </div>
+          {/* My Account Dropdown */}
+          <li className="nav-item dropdown">
+            <button
+              className="nav-link dropdown-toggle"
+              onClick={toggleAccountDropdown}
+            >
+              Mon Compte
+              <span className={`dropdown-arrow ${accountDropdownActive ? 'active' : ''}`}>▼</span>
+            </button>
+
+            {accountDropdownActive && (
+              <div className="dropdown-menu">
+                {isAuthenticated ? (
+                  <>
+                    <div className="dropdown-header">
+                      Bonjour, {user.name}
+                    </div>
+                    <button
+                      onClick={handleLogout}
+                      className="dropdown-link logout-link"
+                    >
+                      Déconnexion
+                    </button>
+                    <Link
+                      to="/my-bookings"
+                      className="dropdown-link"
+                      onClick={() => setAccountDropdownActive(false)}
+                    >
+                      Mes Réservations
+                    </Link>
+                  </>
+                ) : (
+                  <>
+                    <Link
+                      to="/signin"
+                      className="dropdown-link"
+                      onClick={() => setAccountDropdownActive(false)}
+                    >
+                      Se connecter
+                    </Link>
+                    <Link
+                      to="/signup"
+                      className="dropdown-link"
+                      onClick={() => setAccountDropdownActive(false)}
+                    >
+                      S'inscrire
+                    </Link>
+                  </>
+                )}
+              </div>
+            )}
+          </li>
+        </ul>
       </div>
     </nav>
   );

@@ -5,55 +5,69 @@ import com.example.travelapp.entity.Customer;
 import com.example.travelapp.entity.User;
 import com.example.travelapp.enums.Role;
 import com.example.travelapp.repository.CustomerRepository;
+import com.example.travelapp.repository.UserRepository;
 import com.example.travelapp.services.BookingService;
-import com.example.travelapp.services.CustomerService;
-import com.example.travelapp.services.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+import jakarta.servlet.http.HttpServletRequest;
 
-import java.security.Principal;
+import java.util.Collections;
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/bookings")
+@CrossOrigin(origins = "*", maxAge = 3600)
 public class BookingController {
 
     private final BookingService bookingService;
-    private final CustomerService customerService;
     private final CustomerRepository customerRepository;
+    private final UserRepository userRepository;
 
-    private final UserService userService;
-
-    public BookingController(BookingService bookingService, CustomerService customerService, CustomerRepository customerRepository, UserService userService) {
+    public BookingController(BookingService bookingService, CustomerRepository customerRepository, UserRepository userRepository) {
         this.bookingService = bookingService;
-        this.customerService = customerService;
         this.customerRepository = customerRepository;
-        this.userService = userService;
+        this.userRepository = userRepository;
     }
 
     // -------------------- GET BOOKINGS --------------------
     @GetMapping
-    public List<Booking> getBookings(@RequestParam(required = false) Long userId) {
-        if (userId != null) {
-            // Si c'est un utilisateur normal, retourne seulement ses réservations
-            Customer customer = customerService.getCustomerById(userId);
-            return bookingService.getBookingsByCustomerId(customer.getId());
+    public ResponseEntity<List<Booking>> getBookings(@AuthenticationPrincipal UserDetails userDetails) {
+        if (userDetails == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Collections.emptyList());
         }
-        // Si pas de userId, c'est un admin → retourne toutes les réservations
-        return bookingService.getAllBookings();
+        String email = userDetails.getUsername();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found with email: " + email));
+
+        if (user.getRole() == Role.ADMIN) {
+            return ResponseEntity.ok(bookingService.getAllBookings());
+        }
+
+        Customer customer = customerRepository.findByUser(user)
+                .orElseThrow(() -> new RuntimeException("Customer not found for user: " + email));
+
+        return ResponseEntity.ok(bookingService.getBookingsByCustomerId(customer.getId()));
     }
 
     // -------------------- CREATE BOOKING --------------------
 
 
     @PostMapping
-    public ResponseEntity<?> createBooking(@RequestBody Booking booking, Principal principal) {
-        if (principal == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Utilisateur non connecté !");
+    public ResponseEntity<?> createBooking(@RequestBody Booking booking, @AuthenticationPrincipal UserDetails userDetails, HttpServletRequest request) {
+        // --- DIAGNOSTIC LOGGING ---
+        String authHeader = request.getHeader("Authorization");
+        System.out.println("Authorization Header: " + authHeader);
+        System.out.println("UserDetails: " + userDetails);
+        // --- END DIAGNOSTIC LOGGING ---
+
+        if (userDetails == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Utilisateur non connecté ou token invalide ! Header: " + authHeader);
         }
 
-        String email = principal.getName(); // récupéré depuis JWT
+        String email = userDetails.getUsername(); // récupéré depuis JWT
         Booking savedBooking = bookingService.saveBookingForUser(booking, email);
         return ResponseEntity.ok(savedBooking);
     }
